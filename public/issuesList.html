@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="./styles/style.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
+
+    <title>Issues List</title>
+</head>
+<body>
+
+    <nav><a href="login.html">Sign Out</a></nav>
+
+    <h1> Current Issues <i class="fas fa-exclamation-circle" title="Exclamation Icon"></i></h1>
+    <hr>
+
+    <a href="addIssue.html" id="addIssue"><i class="fas fa-plus-square"> Add Issue</i></a>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Issue</th>
+                <th>Description</th>
+                <th>Type</th>
+                <th>Priority</th>
+                <th>Open?</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><a href="./issues/A.html">A</a></td>
+                <td>Problem causes Issue A</td>
+                <td>Type 1</td>
+                <td>Priority 5</td>
+                <td>True</td>
+                <td class="modifyBtns"><a href="./issues/deleteA.html"><i class="far fa-trash-alt" title="Delete Issue">Delete</i></a></td>
+                <td class="modifyBtns"><a href="edit.html"><i class="far fa-edit" title="Edit Issue">Edit</i></a>
+            </tr>
+            <tr>
+                <td><a href="./issues/B.html">B</a></td>
+                <td>Problem causes Issue B</td>
+                <td>Type 1</td>
+                <td>Priority 5</td>
+                <td>True</td>
+                <td class="modifyBtns"><a href="./issues/deleteB.html"><i class="far fa-trash-alt" title="Delete Issue">Delete</i></a></td>
+                <td class="modifyBtns"><a href="edit.html"><i class="far fa-edit" title="Edit Issue">Edit</i></a>
+            </tr>
+        </tbody>
+          
+        
+    </table>
+</body>
+</html>

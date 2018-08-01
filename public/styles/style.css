@@ -1,0 +1,69 @@
+@media screen{
+    @font-face{
+        font-family: 'Custom';
+        src: url(./fonts/Roboto/Roboto-Regular.ttf)
+        
+    }
+
+
+    body {
+        background-color: whitesmoke;
+        font-family: 'Custom' , sans-serif;
+        
+    }
+
+    table, td, th { border: 1px solid gray }
+
+    #bigHeader{
+        font-size:5vw; 
+        max-width:100%;
+        color:red;
+    }
+        .userform{
+        border: 1px solid lightgrey ;
+        border-radius: 5px;
+        padding: 10px;
+        line-height: 2;
+        
+    }
+
+    #addIssue{
+        color:green;
+        border: 1px solid green;
+        border-radius: 5px;
+        padding:3px;
+        line-height:2;
+    }
+
+    .confirmDeleteButtons > form{
+        display:inline;
+    }
+
+    img{
+        max-width: 100%;
+        height: auto;
+    }
+}
+
+@media print{
+    /* Print CSS rules go here */
+    /* Note: You need a separate @media screen group for other rules */
+    body {
+        background-color:white;
+        color:black;
+        font-family: 'Times New Roman', Times, serif;
+    }
+
+    #addIssue{
+        display:none;
+    }
+
+    .modifyBtns{
+        display:none;
+    }
+    
+    nav{
+        display:none;
+    }
+
+}
