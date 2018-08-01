@@ -1,54 +1,25 @@
 {
   "issues": [
     {
-      "id": 3,
       "title": "A scary bug",
-      "author": "joe",
-      "closed": "false"
+      "type": "Test",
+      "priority": "High",
+      "closed": "true",
+      "id": 3
     },
     {
       "title": "Fun",
-      "author": "Times",
+      "type": "Doc",
+      "priority": "Low",
       "closed": "false",
       "id": 4
     },
     {
-      "issueId": "5",
       "title": "What",
-      "author": "Thomas",
+      "type": "Code",
+      "priority": "Medium",
       "closed": "false",
       "id": 5
-    },
-    {
-      "issueId": "9",
-      "title": "Dad fixed it",
-      "author": "TAPPER",
-      "closed": "false",
-      "id": 9
-    },
-    {
-      "title": "Junk Bug",
-      "author": "Thomas",
-      "closed": "false",
-      "id": 10
-    },
-    {
-      "title": "Some fun",
-      "author": "For me",
-      "closed": "false",
-      "id": 11
-    },
-    {
-      "title": "wat watas",
-      "author": "some dude",
-      "closed": "false",
-      "id": 12
-    },
-    {
-      "title": "asdf",
-      "author": "asdf",
-      "closed": "false",
-      "id": 13
     }
   ]
 }
