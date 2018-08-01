@@ -16,12 +16,13 @@
     <h1> Current Issues <i class="fas fa-exclamation-circle" title="Exclamation Icon"></i></h1>
     <hr>
 
+    <div id="bugList"></div><br>
 
-    <div id="bugList"></div>
     <div id="dialog"></div>
 
 
     <template id="issueFormTemplate">
+        <b>Add Issue:</b>
         <form id="addForm">
             <label for="title">Title:</label>
             <input type="text" id="title" name="title"><br>
@@ -84,6 +85,7 @@
                  <td>${issue.type}</td>
                  <td>${issue.priority}</td>
                  <td>${issue.closed}</td>
+                <td class="modifyBtns"><i onclick="deleteIssue(${issue.id})" class="far fa-trash-alt" title="Delete Issue"></i></td>
                </tr>`
               )).join('')+
               `</tbody></table>`;
@@ -129,6 +131,27 @@
                 document.querySelector('#cancelBtn').onclick = function () {
                     document.querySelector('#dialog').innerHTML = "";  
                 }
+            }
+
+            // deleteIssue - really basic delete with confirm idea to show how you can mock and then remove with fancier stuff later
+            function deleteIssue(id) {
+                
+                function confirmDelete() {
+                    // simple example of incrementalism - use cheesy built-in confirm first.  Change to fancy one later
+                    return window.confirm('Delete issue?')
+                }
+
+                if (!confirmDelete())
+                return;  
+
+                let xhr = new XMLHttpRequest();
+                xhr.open('DELETE', url+'/'+id, true);
+                xhr.onload = function () {
+                    // no error checking done here
+                    // bad idea to go and refetch issues...lots of network - need a store :-)
+                    getIssues();
+                }
+                xhr.send();
             }
            </script>  
 </body>
