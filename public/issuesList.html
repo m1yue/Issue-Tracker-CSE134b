@@ -16,8 +16,10 @@
     <h1> Current Issues <i class="fas fa-exclamation-circle" title="Exclamation Icon"></i></h1>
     <hr>
 
+
     <div id="bugList"></div>
     <div id="dialog"></div>
+
 
     <template id="issueFormTemplate">
         <form id="addForm">
@@ -65,7 +67,8 @@
        
               issues = JSON.parse(issues);
        
-              let output = `<table>
+              let output = `<button id="e" onclick="addIssue()"><i class="fas fa-plus-square"> Add Issue</i></button><br><br>
+                            <table>
                             <thead>
                             <tr>
                                 <th>Title</th>
@@ -83,11 +86,7 @@
                  <td>${issue.closed}</td>
                </tr>`
               )).join('')+
-              `</tbody>
-                <tr>
-                <td rowspan="5"><button id="addIssue" onclick="addIssue()"><i class="fas fa-plus-square"> Add Issue</i></button></td>
-                </tr>
-                </table>`;
+              `</tbody></table>`;
             
               document.querySelector("#bugList").innerHTML = output;
             }
@@ -97,7 +96,11 @@
                 // clone a blank add form from the template
                 let template = document.querySelector('#issueFormTemplate');
                 let clone = document.importNode(template.content, true);
+
+                //empty innerHTML and append new dialog
+                document.querySelector('#dialog').innerHTML = "";
                 document.querySelector('#dialog').appendChild(clone);
+                
 
                 // wire the add action, can use addEventListener if you like
                 document.querySelector('#addIssueBtn').onclick = function () {
@@ -124,7 +127,7 @@
 
                 // wire the cancel event, can use addEventListener if you like
                 document.querySelector('#cancelBtn').onclick = function () {
-                document.querySelector('#dialog').innerHTML = "";  
+                    document.querySelector('#dialog').innerHTML = "";  
                 }
             }
            </script>  
