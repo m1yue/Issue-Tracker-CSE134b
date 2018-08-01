@@ -16,45 +16,27 @@
     <h1> Current Issues <i class="fas fa-exclamation-circle" title="Exclamation Icon"></i></h1>
     <hr>
 
-    <a href="addIssue.html" id="addIssue"><i class="fas fa-plus-square"> Add Issue</i></a>
+    <div id="bugList"></div>
+    <div id="dialog"></div>
 
-    <div id="bugList">
+    <template id="issueFormTemplate">
+        <form id="addForm">
+            <label for="title">Title:</label>
+            <input type="text" id="title" name="title"><br>
+            <label for="type">Type:</label>
+            <input type="text" id="type" name="type"><br>
+            <label for="priority">Priority:</label>
+                    <select name="priority" id="priority">
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                    </select><br>
+            <input type="hidden" id="closed" name="closed" value="false">
+            <button id="addIssueBtn" type="button">Add</button>
+            <button id="cancelBtn" type="button">Cancel</button>
+        </form>
+    </template>
 
-    <!--
-
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Issue</th>
-                <th>Description</th>
-                <th>Type</th>
-                <th>Priority</th>
-                <th>Open?</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><a href="./issues/A.html">A</a></td>
-                <td>Problem causes Issue A</td>
-                <td>Type 1</td>
-                <td>Priority 5</td>
-                <td>True</td>
-                <td class="modifyBtns"><a href="./issues/deleteA.html"><i class="far fa-trash-alt" title="Delete Issue">Delete</i></a></td>
-                <td class="modifyBtns"><a href="edit.html"><i class="far fa-edit" title="Edit Issue">Edit</i></a>
-            </tr>
-            <tr>
-                <td><a href="./issues/B.html">B</a></td>
-                <td>Problem causes Issue B</td>
-                <td>Type 1</td>
-                <td>Priority 5</td>
-                <td>True</td>
-                <td class="modifyBtns"><a href="./issues/deleteB.html"><i class="far fa-trash-alt" title="Delete Issue">Delete</i></a></td>
-                <td class="modifyBtns"><a href="edit.html"><i class="far fa-edit" title="Edit Issue">Edit</i></a>
-            </tr>
-        </tbody>
-        
-    </table>
-    -->
 
     <script>
             // easy global use just kicks to change easily
@@ -89,9 +71,10 @@
                                 <th>Title</th>
                                 <th>Type</th>
                                 <th>Priority</th>
-                                <th>Open?</th>
+                                <th>Closed?</th>
                             </tr>
-                            </thead>` 
+                            </thead>
+                            <tbody>` 
                + (issues.map(issue => 
                `<tr data-id="${issue.id}" data-issue='`+JSON.stringify(issue)+`'>
                  <td>${issue.title}</td>
@@ -99,11 +82,51 @@
                  <td>${issue.priority}</td>
                  <td>${issue.closed}</td>
                </tr>`
-              )).join('');
+              )).join('')+
+              `</tbody>
+                <tr>
+                <td rowspan="5"><button id="addIssue" onclick="addIssue()"><i class="fas fa-plus-square"> Add Issue</i></button></td>
+                </tr>
+                </table>`;
             
               document.querySelector("#bugList").innerHTML = output;
             }
        
+            // addIssue - notice that the differences between add and Edit are minor you could combine but readability might be hurt
+            function addIssue() {
+                // clone a blank add form from the template
+                let template = document.querySelector('#issueFormTemplate');
+                let clone = document.importNode(template.content, true);
+                document.querySelector('#dialog').appendChild(clone);
+
+                // wire the add action, can use addEventListener if you like
+                document.querySelector('#addIssueBtn').onclick = function () {
+
+                    let formData = new FormData(document.querySelector('#addForm'));
+                    let payload = {};
+                    formData.forEach(function(value, key){
+                                    payload[key] = value;
+                            });
+                    payload = JSON.stringify(payload);
+                    
+                    let xhr = new XMLHttpRequest();
+                    xhr.open('POST', url, true);
+                    xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8')
+                    xhr.onload = function () {
+                    // no error checking done here!
+                    // bad idea to go and refetch issues, network is easy but... need a store 
+                    getIssues();
+                    }
+                    xhr.send(payload);
+
+                    document.querySelector("#dialog").innerHTML = "";
+                }
+
+                // wire the cancel event, can use addEventListener if you like
+                document.querySelector('#cancelBtn').onclick = function () {
+                document.querySelector('#dialog').innerHTML = "";  
+                }
+            }
            </script>  
 </body>
 </html>
