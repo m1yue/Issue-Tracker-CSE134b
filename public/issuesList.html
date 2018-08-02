@@ -68,7 +68,6 @@
             });
         }
 
-
         </script>
 </head>
 <body>
@@ -76,6 +75,11 @@
         <div id="sign-in-status"></div>
         <div id="sign-in"></div>
     </nav>  
+    
+    <button id="toggleFirestore" onclick="toggleFirestore(true)">Firestore</button>
+    <button id="toggleRest" onclick="toggleFirestore(false)">REST</button>
+
+
 
     <div class="outer-div">
         <div class="inner-div">
@@ -133,8 +137,20 @@
 
 
     <script>
-            //global variable to change if using firestore or not
-            var useFirestore = true;
+                                //global variable to change if using firestore or not
+                    var useFirestore=true;
+
+            //toggle via checkbox
+            function toggleFirestore(inp) {
+                    useFirestore = inp;
+                    if(useFirestore){
+                        getIssuesFirebase();
+                    }
+                    else{
+                        getIssues();
+                    }
+            }
+
             // easy global use just kicks to change easily
             const url = 'http://localhost:3000/issues';
                
@@ -269,14 +285,10 @@
 
             function firestoreAdd(payload){
                 
-                    var newRef = db.collection("issues").doc();
-
-                    payload.id=newRef.id;
-
-                    newRef.set(payload);
-
-                    console.log(payload);
-
+                var newRef = db.collection("issues").doc();
+                payload.id=newRef.id;
+                newRef.set(payload);
+                console.log(payload);
                 getIssuesFirebase();
             }
 
