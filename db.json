@@ -34,55 +34,6 @@
       "priority": "Low",
       "closed": "false",
       "id": 18
-    },
-    {
-      "title": "sfs",
-      "type": "sfs",
-      "priority": "Low",
-      "closed": "false",
-      "id": 19
-    },
-    {
-      "title": "sf",
-      "type": "dd",
-      "priority": "Low",
-      "closed": "false",
-      "id": 20
-    },
-    {
-      "title": "sf",
-      "type": "afaf",
-      "priority": "Low",
-      "closed": "false",
-      "id": 21
-    },
-    {
-      "title": "sfs",
-      "type": "sfsss",
-      "priority": "Low",
-      "closed": "false",
-      "id": 22
-    },
-    {
-      "title": "sf",
-      "type": "af",
-      "priority": "Low",
-      "closed": "false",
-      "id": 23
-    },
-    {
-      "title": "afa",
-      "type": "sfs",
-      "priority": "Low",
-      "closed": "false",
-      "id": 24
-    },
-    {
-      "title": "dsf",
-      "type": "af",
-      "priority": "Low",
-      "closed": "false",
-      "id": 25
     }
   ]
 }
