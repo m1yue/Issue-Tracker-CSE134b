@@ -11,6 +11,8 @@
 
 
     <script src="https://www.gstatic.com/firebasejs/5.3.0/firebase.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.3.0/firebase-firestore.js"></script>
+
     <script>
     // Initialize Firebase
     var config = {
@@ -22,6 +24,9 @@
         messagingSenderId: "705988756371"
     };
     firebase.initializeApp(config);
+  
+    // Initialize Cloud Firestore through Firebase
+    var db = firebase.firestore();
     </script>
 
     <!--Track Auth Firebase-->
@@ -134,9 +139,13 @@
             // easy global use just kicks to change easily
             const url = 'http://localhost:3000/issues';
             
+            
+
             // when page loads, load those issues
             window.addEventListener('DOMContentLoaded', function () {
-                getIssues();
+                //getIssues();
+                getIssuesFirebase();
+                
             });
        
             // getIssues - simple fetch from the end point getting current issues state
@@ -146,9 +155,22 @@
               let xhr = new XMLHttpRequest();
               xhr.open('GET', url, true);
               xhr.onload = function () {
-                renderIssues(this.responseText);
+                
+                renderIssues(JSON.parse(this.responseText));
               }
               xhr.send();
+            }
+
+            function getIssuesFirebase(){
+                db.collection("issues").get().then(function(querySnapshot) {
+                    var response =[];
+
+                    querySnapshot.forEach(function(doc) {
+                        // doc.data() is never undefined for query doc snapshots
+                         response.push(doc.data());
+                    });
+                    renderIssues(response);
+                });
             }
        
            // renderIssues - render the passed issues using template literals as opposed to template tags to show possibilities
@@ -157,7 +179,6 @@
             firebase.auth().onAuthStateChanged(function(user) {
                 if (user) {
                     // User is signed in.
-                    issues = JSON.parse(issues);
         
                     let output = `<button id="e" onclick="addIssue()"><i class="fas fa-plus-square"> Add Issue</i></button><br><br>
                                 <table>
@@ -191,6 +212,10 @@
                     document.querySelector("#bugList").innerHTML = '<p>Please Sign in to view issues</p>';        
                 }
             });
+           }
+
+           function renderIssuesFirebase(issues){
+
            }
 
             // addIssue - notice that the differences between add and Edit are minor you could combine but readability might be hurt
