@@ -12,7 +12,7 @@
 <body>
 
     <nav><a href="login.html">Sign Out</a></nav>
-
+    
     <h1> Current Issues <i class="fas fa-exclamation-circle" title="Exclamation Icon"></i></h1>
     <hr>
 
@@ -20,14 +20,13 @@
 
     <div id="dialog"></div>
 
-
     <template id="issueFormTemplate">
         <b>Add Issue:</b>
         <form id="addForm">
             <label for="title">Title:</label>
-            <input type="text" id="title" name="title"><br>
+                <input type="text" id="title" name="title"><br>
             <label for="type">Type:</label>
-            <input type="text" id="type" name="type"><br>
+                <input type="text" id="type" name="type"><br>
             <label for="priority">Priority:</label>
                     <select name="priority" id="priority">
                         <option value="Low">Low</option>
@@ -39,6 +38,31 @@
             <button id="cancelBtn" type="button">Cancel</button>
         </form>
     </template>
+
+    <template id="editFormTemplate">
+            <b>Edit Issue:</b>
+            
+            <form id="editForm">
+                <input type="hidden" name="issueId" id="issueId" value="fillIn">
+                <label for="title">Title:</label>
+                    <input type="text" id="title" name="title"><br>
+                <label for="type">Type:</label>
+                    <input type="text" id="type" name="type"><br>
+                <label for="priority">Priority:</label>
+                        <select name="priority" id="priority">
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                        </select><br>
+                <label for="closed">Closed?:</label>
+                    <select id="closed" name="closed">
+                        <option value="false">False</option>
+                        <option value="true">True</option>
+                    </select><br>
+                <button id="editIssueBtn" type="button">Save</button>
+                <button id="cancelBtn" type="button">Cancel</button>
+            </form>
+        </template>
 
 
     <script>
@@ -76,6 +100,7 @@
                                 <th>Type</th>
                                 <th>Priority</th>
                                 <th>Closed?</th>
+                                <th colspan="2">Modify</th>
                             </tr>
                             </thead>
                             <tbody>` 
@@ -86,6 +111,9 @@
                  <td>${issue.priority}</td>
                  <td>${issue.closed}</td>
                 <td class="modifyBtns"><i onclick="deleteIssue(${issue.id})" class="far fa-trash-alt" title="Delete Issue"></i></td>
+                <td class="modifyBtns"><i onclick="editIssue(${issue.id})" class="far fa-edit" title="Edit Issue"></i></td>
+  
+
                </tr>`
               )).join('')+
               `</tbody></table>`;
@@ -153,6 +181,56 @@
                 }
                 xhr.send();
             }
+
+            // editIssue - shows example of how we can bury value in our markup for later use, notice modern libraries do this a lot!
+            function editIssue(id) {
+                        
+                        // retrieve the JSON buried in the markup for the bug
+                        let row = document.querySelector('tr[data-id="'+id+'"]');
+                        let issue = JSON.parse(row.getAttribute('data-issue'));
+            
+                        // populate the form fields into the template
+                        let template = document.querySelector('#editFormTemplate');
+            
+                        template.content.querySelector('#issueId').value = issue.id;
+                        template.content.querySelector('#title').value = issue.title;
+                        template.content.querySelector('#type').value = issue.type;
+                        template.content.querySelector('#closed').value = issue.closed;
+
+            
+                        let clone = document.importNode(template.content, true);
+
+                        document.querySelector('#dialog').innerHTML = "";
+                        document.querySelector('#dialog').appendChild(clone);
+            
+                    // write up the save button, can use addEventListener if you like
+                    document.querySelector('#editIssueBtn').onclick = function () {        
+                        let formData = new FormData(document.querySelector('#editForm'));
+                        let id = formData.get('issueId');
+                        let payload = {};
+                        formData.forEach(function(value, key){
+                                        payload[key] = value;
+                                });
+                        payload = JSON.stringify(payload);
+                        
+                        let xhr = new XMLHttpRequest();
+                        xhr.open('PUT', url+'/'+id, true);
+                        xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8')
+                        xhr.onload = function () {
+                            // no error checking done here
+                            // bad idea to go and refetch issues...lots of network - need a store :-)
+                            getIssues();
+                        }
+                        xhr.send(payload);
+                        document.querySelector("#dialog").innerHTML = "";
+                    }
+                    
+                    // wire up the cancel button, can use addEventListener if you like
+                    document.querySelector('#cancelBtn').onclick = function () {
+                        document.querySelector('#dialog').innerHTML = "";  
+                    }
+            }
+
            </script>  
 </body>
 </html>
