@@ -1,27 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <title>Issues List</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link href="./styles/style.css" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
 
-    <title>Issues List</title>
+
+
+    <script src="https://www.gstatic.com/firebasejs/5.3.0/firebase.js"></script>
+    <script>
+    // Initialize Firebase
+    var config = {
+        apiKey: "AIzaSyDiHIMKzOAqSr_P9O0Ih89sIcxwuxHRIc0",
+        authDomain: "issue-tracker-cse134b-m1yue.firebaseapp.com",
+        databaseURL: "https://issue-tracker-cse134b-m1yue.firebaseio.com",
+        projectId: "issue-tracker-cse134b-m1yue",
+        storageBucket: "issue-tracker-cse134b-m1yue.appspot.com",
+        messagingSenderId: "705988756371"
+    };
+    firebase.initializeApp(config);
+    </script>
+
+    <!--Track Auth Firebase-->
+    <script type="text/javascript">
+        initApp = function() {
+          firebase.auth().onAuthStateChanged(function(user) {
+            if (user) {
+              // User is signed in.
+              var displayName = user.displayName;
+              var email = user.email;
+              var emailVerified = user.emailVerified;
+              var photoURL = user.photoURL;
+              var uid = user.uid;
+              var phoneNumber = user.phoneNumber;
+              var providerData = user.providerData;
+              user.getIdToken().then(function(accessToken) {
+                document.getElementById('sign-in-status').innerHTML = 'Hi ' +displayName+'!';
+                document.getElementById('sign-in').innerHTML = `<a href="#" onclick="signOut()">Sign out</a>`;
+                document.getElementById('account-details').textContent = JSON.stringify({
+                  displayName: displayName,
+                  email: email,
+                  emailVerified: emailVerified,
+                  phoneNumber: phoneNumber,
+                  photoURL: photoURL,
+                  uid: uid,
+                  accessToken: accessToken,
+                  providerData: providerData
+                }, null, '  ');
+              });
+            } else {
+              // User is signed out.
+              document.getElementById('sign-in-status').textContent = 'You are not signed in.';
+              document.getElementById('sign-in').innerHTML = `<a href="index.html">Sign in</a>`;
+              document.getElementById('account-details').textContent = 'null';
+            }
+          }, function(error) {
+            console.log(error);
+          });
+        };
+  
+        window.addEventListener('load', function() {
+          initApp()
+        });
+
+        function signOut(){
+            firebase.auth().signOut().then(function() {
+                //window.location.replace("./index.html")
+            // Sign-out successful.
+            }).catch(function(error) {
+            // An error happened.
+            });
+        }
+
+
+        </script>
 </head>
 <body>
+    <nav>
+        <div id="sign-in-status"></div>
+        <div id="sign-in"></div>
+    </nav>  
 
-    <nav><a href="index.html">Sign Out</a></nav>
-    
     <div class="outer-div">
         <div class="inner-div">
             <h1> Current Issues <i class="fas fa-exclamation-circle" title="Exclamation Icon"></i></h1>
             <hr>
 
+            
             <div id="bugList"></div><br>
             <div id="dialog"></div>
         </div>
     </div>
+
     <template id="issueFormTemplate">
         <b>Add Issue:</b>
         <form id="addForm">
@@ -91,38 +164,45 @@
            // renderIssues - render the passed issues using template literals as opposed to template tags to show possibilities
            // approach deeply buries in the markup though!
            function renderIssues(issues) {
-       
-              issues = JSON.parse(issues);
-       
-              let output = `<button id="e" onclick="addIssue()"><i class="fas fa-plus-square"> Add Issue</i></button><br><br>
-                            <table>
-                            <thead>
-                            <tr>
-                                <th>Title</th>
-                                <th>Type</th>
-                                <th>Priority</th>
-                                <th>Closed?</th>
-                                <th colspan="2">Modify</th>
-                            </tr>
-                            </thead>
-                            <tbody>` 
-               + (issues.map(issue => 
-               `<tr data-id="${issue.id}" data-issue='`+JSON.stringify(issue)+`'>
-                 <td>${issue.title}</td>
-                 <td>${issue.type}</td>
-                 <td>${issue.priority}</td>
-                 <td>${issue.closed}</td>
-                <td class="modifyBtns"><i onclick="deleteIssue(${issue.id})" class="far fa-trash-alt" title="Delete Issue"></i></td>
-                <td class="modifyBtns"><i onclick="editIssue(${issue.id})" class="far fa-edit" title="Edit Issue"></i></td>
-  
+            firebase.auth().onAuthStateChanged(function(user) {
+                if (user) {
+                    // User is signed in.
+                    issues = JSON.parse(issues);
+        
+                    let output = `<button id="e" onclick="addIssue()"><i class="fas fa-plus-square"> Add Issue</i></button><br><br>
+                                <table>
+                                <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Type</th>
+                                    <th>Priority</th>
+                                    <th>Closed?</th>
+                                    <th colspan="2">Modify</th>
+                                </tr>
+                                </thead>
+                                <tbody>` 
+                    + (issues.map(issue => 
+                    `<tr data-id="${issue.id}" data-issue='`+JSON.stringify(issue)+`'>
+                        <td>${issue.title}</td>
+                        <td>${issue.type}</td>
+                        <td>${issue.priority}</td>
+                        <td>${issue.closed}</td>
+                    <td class="modifyBtns"><i onclick="deleteIssue(${issue.id})" class="far fa-trash-alt" title="Delete Issue"></i></td>
+                    <td class="modifyBtns"><i onclick="editIssue(${issue.id})" class="far fa-edit" title="Edit Issue"></i></td>
 
-               </tr>`
-              )).join('')+
-              `</tbody></table>`;
-            
-              document.querySelector("#bugList").innerHTML = output;
-            }
-       
+
+                    </tr>`
+                    )).join('')+
+                    `</tbody></table>`;
+                
+                    document.querySelector("#bugList").innerHTML = output;
+                } else {
+                    // No user is signed in.
+                    document.querySelector("#bugList").innerHTML = '<p>Please Sign in to view issues</p>';        
+                }
+            });
+           }
+
             // addIssue - notice that the differences between add and Edit are minor you could combine but readability might be hurt
             function addIssue() {
                 // clone a blank add form from the template
