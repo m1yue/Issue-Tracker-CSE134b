@@ -134,6 +134,8 @@
 
 
     <script>
+
+            var useFirestore = true;
             // easy global use just kicks to change easily
             const url = 'http://localhost:3000/issues';
                
@@ -143,8 +145,14 @@
 
             // when page loads, load those issues
             window.addEventListener('DOMContentLoaded', function () {
-                //getIssues();
-                getIssuesFirebase();
+                
+                if(useFirestore){
+                    getIssuesFirebase();
+                }
+                else{
+                    getIssues();
+                }
+
                 
             });
        
@@ -232,10 +240,14 @@
                     formData.forEach(function(value, key){
                                     payload[key] = value;
                             });
-                   
-                    //xhrAdd(payload);
-                    firestoreAdd(payload);
 
+                    //storage type selection
+                    if(useFirestore){
+                        firestoreAdd(payload);
+                    }else{//REST
+                        xhrAdd(payload);
+                    }
+                  
                     document.querySelector("#dialog").innerHTML = "";
                 }
 
@@ -273,7 +285,16 @@
 
                 if (!confirmDelete())
                 return;  
+                
+                if(useFirestore){
+                    firestoreDelete(id);
+                }else{
+                    xhrDelete(id);
+                }
 
+            }
+
+            function xhrDelete(id){
                 let xhr = new XMLHttpRequest();
                 xhr.open('DELETE', url+'/'+id, true);
                 xhr.onload = function () {
@@ -282,6 +303,14 @@
                     getIssues();
                 }
                 xhr.send();
+            }
+
+            function firestoreDelete(id){
+                db.collection("cities").doc(id).delete().then(function() {
+                    getIssuesFirebase();
+                }).catch(function(error) {
+                    console.error("Error removing document: ", error);
+                });
             }
 
             // editIssue - shows example of how we can bury value in our markup for later use, notice modern libraries do this a lot!
