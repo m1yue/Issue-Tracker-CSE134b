@@ -1,33 +1,58 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
+<html>
+  <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Sample FirebaseUI App</title>
     <link href="./styles/style.css" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
-    <title>Login - Issue Tracker</title>
-    <style>
 
+    <script src="https://www.gstatic.com/firebasejs/5.3.0/firebase.js"></script>
+    <script>
+    // Initialize Firebase
+    var config = {
+        apiKey: "AIzaSyDiHIMKzOAqSr_P9O0Ih89sIcxwuxHRIc0",
+        authDomain: "issue-tracker-cse134b-m1yue.firebaseapp.com",
+        databaseURL: "https://issue-tracker-cse134b-m1yue.firebaseio.com",
+        projectId: "issue-tracker-cse134b-m1yue",
+        storageBucket: "issue-tracker-cse134b-m1yue.appspot.com",
+        messagingSenderId: "705988756371"
+    };
+    firebase.initializeApp(config);
+    </script>
+    <script src="https://cdn.firebase.com/libs/firebaseui/3.2.0/firebaseui.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/3.2.0/firebaseui.css" />
+    <script type="text/javascript">
+      // FirebaseUI config.
+      var uiConfig = {
+        signInSuccessUrl: 'issuesList.html',
+        signInOptions: [
+          // Leave the lines as is for the providers you want to offer your users.
+          firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+          firebase.auth.FacebookAuthProvider.PROVIDER_ID,
+          firebase.auth.TwitterAuthProvider.PROVIDER_ID,
+          firebase.auth.GithubAuthProvider.PROVIDER_ID,
+          firebase.auth.EmailAuthProvider.PROVIDER_ID,
+          firebase.auth.PhoneAuthProvider.PROVIDER_ID,
+          firebaseui.auth.AnonymousAuthProvider.PROVIDER_ID
+        ],
+        // Terms of service url.
+        tosUrl: '<your-tos-url>',
+        // Privacy policy url.
+        privacyPolicyUrl: '<your-privacy-policy-url>'
+      };
 
-    </style>
-</head> 
-<body>
-    <h1 id="bigHeader"><i class="fas fa-exclamation-circle" title="Exclamation Icon"></i> Issue Tracker TBD V.2 <i class="fas fa-exclamation-circle" title="Exclamation Icon"></i></h1>
-    
-    <h2>Login</h2>
-    <p>Please sign in to use the issue tracker service.</p>
-  
-    <form action="issuesList.html" name="login" class="userform"> 
-        <label>Username:</label>
-        <input type="text" name="username"><br>
-        <label>Password:</label>
-        <input type="password" name="pass"><br>
-
-        Don't Have an account? <a href="signup.html">Sign up</a><br>
-        <input type="submit" value="Sign In"><br>
-        
-        
-    </form>
-</body>
+      // Initialize the FirebaseUI Widget using Firebase.
+      var ui = new firebaseui.auth.AuthUI(firebase.auth());
+      // The start method will wait until the DOM is loaded.
+      ui.start('#firebaseui-auth-container', uiConfig);
+    </script>
+  </head>
+  <body>
+    <!-- The surrounding HTML is left untouched by FirebaseUI.
+         Your app may use that space for branding, controls and other customizations.-->
+         
+         <div class="outer-div"><div class="inner-div"><h1 id="bigHeader"><i class="fas fa-exclamation-circle" title="Exclamation Icon"></i> Issue Tracker V.3 <i class="fas fa-exclamation-circle" title="Exclamation Icon"></i></h1>
+         </div></div>
+    <div id="firebaseui-auth-container"></div>
+  </body>
 </html>

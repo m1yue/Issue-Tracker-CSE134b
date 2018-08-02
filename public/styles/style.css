@@ -23,11 +23,23 @@
     }
 
     tr:hover {background-color: lightblue}
-
+  
+    .outer-div
+    {
+         padding: 30px;
+         text-align: center;
+    }
+    .inner-div
+    {
+         display: inline-block;
+         padding: 30px;
+    }
+    
+    
+   
     #bigHeader{
-        font-size:5vw; 
-        max-width:100%;
-        color:red;
+        font-size:3vw; 
+        
     }
         .userform{
         border: 1px solid lightgrey ;
@@ -62,7 +74,7 @@
         transform: scale(1.5);
         transition: border-color 0s, transform 0.3s ease-out;
     }
-    
+
     .center {
         margin: auto;
         width: 50%;
