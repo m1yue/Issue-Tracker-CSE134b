@@ -40,16 +40,6 @@
               user.getIdToken().then(function(accessToken) {
                 document.getElementById('sign-in-status').innerHTML = 'Hi ' +displayName+'!';
                 document.getElementById('sign-in').innerHTML = `<a href="#" onclick="signOut()">Sign out</a>`;
-                document.getElementById('account-details').textContent = JSON.stringify({
-                  displayName: displayName,
-                  email: email,
-                  emailVerified: emailVerified,
-                  phoneNumber: phoneNumber,
-                  photoURL: photoURL,
-                  uid: uid,
-                  accessToken: accessToken,
-                  providerData: providerData
-                }, null, '  ');
               });
             } else {
               // User is signed out.
