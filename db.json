@@ -15,14 +15,6 @@
       "id": 4
     },
     {
-      "issueId": "5",
-      "title": "What",
-      "type": "Code",
-      "priority": "Low",
-      "closed": "true",
-      "id": 5
-    },
-    {
       "issueId": "8",
       "title": "test",
       "type": "demo",
