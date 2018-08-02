@@ -11,6 +11,8 @@
 
 
     <script src="https://www.gstatic.com/firebasejs/5.3.0/firebase.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.3.0/firebase-firestore.js"></script>
+
     <script>
     // Initialize Firebase
     var config = {
@@ -22,6 +24,7 @@
         messagingSenderId: "705988756371"
     };
     firebase.initializeApp(config);
+  
     </script>
 
     <!--Track Auth Firebase-->
@@ -65,7 +68,6 @@
             });
         }
 
-
         </script>
 </head>
 <body>
@@ -73,13 +75,17 @@
         <div id="sign-in-status"></div>
         <div id="sign-in"></div>
     </nav>  
+    
+    <button id="toggleFirestore" onclick="toggleFirestore(true)">Firestore</button>
+    <button id="toggleRest" onclick="toggleFirestore(false)">REST</button>
+
+
 
     <div class="outer-div">
         <div class="inner-div">
             <h1> Current Issues <i class="fas fa-exclamation-circle" title="Exclamation Icon"></i></h1>
             <hr>
-
-            
+      
             <div id="bugList"></div><br>
             <div id="dialog"></div>
         </div>
@@ -131,24 +137,62 @@
 
 
     <script>
+                                //global variable to change if using firestore or not
+                    var useFirestore=true;
+
+            //toggle via checkbox
+            function toggleFirestore(inp) {
+                    useFirestore = inp;
+                    if(useFirestore){
+                        getIssuesFirebase();
+                    }
+                    else{
+                        getIssues();
+                    }
+            }
+
             // easy global use just kicks to change easily
             const url = 'http://localhost:3000/issues';
+               
+            // Initialize Cloud Firestore through Firebase
+            var db = firebase.firestore();
             
+
             // when page loads, load those issues
             window.addEventListener('DOMContentLoaded', function () {
-                getIssues();
+                
+                if(useFirestore){
+                    getIssuesFirebase();
+                }
+                else{
+                    getIssues();
+                }
+
+                
             });
        
             // getIssues - simple fetch from the end point getting current issues state
             function getIssues() {
-       
               // change to fetch API if you are so inclined
               let xhr = new XMLHttpRequest();
               xhr.open('GET', url, true);
               xhr.onload = function () {
-                renderIssues(this.responseText);
+                
+                renderIssues(JSON.parse(this.responseText));
               }
               xhr.send();
+            }
+            
+            function getIssuesFirebase(){
+                db.collection("issues").get().then(function(querySnapshot) {
+                    var response =[];
+
+                    querySnapshot.forEach(function(doc) {
+                        // doc.data() is never undefined for query doc snapshots
+                         response.push(doc.data());
+                    });
+                    renderIssues(response);
+                });
             }
        
            // renderIssues - render the passed issues using template literals as opposed to template tags to show possibilities
@@ -157,7 +201,6 @@
             firebase.auth().onAuthStateChanged(function(user) {
                 if (user) {
                     // User is signed in.
-                    issues = JSON.parse(issues);
         
                     let output = `<button id="e" onclick="addIssue()"><i class="fas fa-plus-square"> Add Issue</i></button><br><br>
                                 <table>
@@ -177,10 +220,8 @@
                         <td>${issue.type}</td>
                         <td>${issue.priority}</td>
                         <td>${issue.closed}</td>
-                    <td class="modifyBtns"><i onclick="deleteIssue(${issue.id})" class="far fa-trash-alt" title="Delete Issue"></i></td>
-                    <td class="modifyBtns"><i onclick="editIssue(${issue.id})" class="far fa-edit" title="Edit Issue"></i></td>
-
-
+                    <td class="modifyBtns"><i onclick="deleteIssue('${issue.id}')" class="far fa-trash-alt" title="Delete Issue"></i></td>
+                    <td class="modifyBtns"><i onclick="editIssue('${issue.id}')" class="far fa-edit" title="Edit Issue"></i></td>
                     </tr>`
                     )).join('')+
                     `</tbody></table>`;
@@ -212,18 +253,14 @@
                     formData.forEach(function(value, key){
                                     payload[key] = value;
                             });
-                    payload = JSON.stringify(payload);
-                    
-                    let xhr = new XMLHttpRequest();
-                    xhr.open('POST', url, true);
-                    xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8')
-                    xhr.onload = function () {
-                    // no error checking done here!
-                    // bad idea to go and refetch issues, network is easy but... need a store 
-                    getIssues();
-                    }
-                    xhr.send(payload);
 
+                    //storage type selection
+                    if(useFirestore){
+                        firestoreAdd(payload);
+                    }else{//REST
+                        xhrAdd(payload);
+                    }
+                  
                     document.querySelector("#dialog").innerHTML = "";
                 }
 
@@ -233,9 +270,30 @@
                 }
             }
 
+            function xhrAdd(payload){
+                payload = JSON.stringify(payload);
+                let xhr = new XMLHttpRequest();
+                xhr.open('POST', url, true);
+                xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8')
+                xhr.onload = function () {
+                // no error checking done here!
+                // bad idea to go and refetch issues, network is easy but... need a store 
+                getIssues();
+                }
+                xhr.send(payload);
+            }
+
+            function firestoreAdd(payload){
+                
+                var newRef = db.collection("issues").doc();
+                payload.id=newRef.id;
+                newRef.set(payload);
+                console.log(payload);
+                getIssuesFirebase();
+            }
+
             // deleteIssue - really basic delete with confirm idea to show how you can mock and then remove with fancier stuff later
             function deleteIssue(id) {
-                
                 function confirmDelete() {
                     // simple example of incrementalism - use cheesy built-in confirm first.  Change to fancy one later
                     return window.confirm('Delete issue?')
@@ -243,7 +301,16 @@
 
                 if (!confirmDelete())
                 return;  
+                
+                if(useFirestore){
+                    firestoreDelete(id);
+                }else{
+                    xhrDelete(id);
+                }
 
+            }
+
+            function xhrDelete(id){
                 let xhr = new XMLHttpRequest();
                 xhr.open('DELETE', url+'/'+id, true);
                 xhr.onload = function () {
@@ -252,6 +319,12 @@
                     getIssues();
                 }
                 xhr.send();
+            }
+
+            function firestoreDelete(id){
+                db.collection("issues").doc(id).delete()
+                getIssuesFirebase();
+
             }
 
             // editIssue - shows example of how we can bury value in our markup for later use, notice modern libraries do this a lot!
@@ -283,18 +356,28 @@
                         formData.forEach(function(value, key){
                                         payload[key] = value;
                                 });
-                        payload = JSON.stringify(payload);
                         
-                        let xhr = new XMLHttpRequest();
-                        xhr.open('PUT', url+'/'+id, true);
-                        xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8')
-                        xhr.onload = function () {
-                            // no error checking done here
-                            // bad idea to go and refetch issues...lots of network - need a store :-)
-                            getIssues();
+                        if(!useFirestore){
+                            payload = JSON.stringify(payload);
+                            let xhr = new XMLHttpRequest();
+                            xhr.open('PUT', url+'/'+id, true);
+                            xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8')
+                            xhr.onload = function () {
+                                // no error checking done here
+                                // bad idea to go and refetch issues...lots of network - need a store :-)
+                                getIssues();
+                            }
+                            xhr.send(payload);
+
+                        }else{//FIRESTORE
+
+                            var newRef = db.collection("issues").doc(id);
+                            console.log(payload);
+                            newRef.update(payload)
+                            getIssuesFirebase();
                         }
-                        xhr.send(payload);
                         document.querySelector("#dialog").innerHTML = "";
+
                     }
                     
                     // wire up the cancel button, can use addEventListener if you like
@@ -302,6 +385,9 @@
                         document.querySelector('#dialog').innerHTML = "";  
                     }
             }
+
+            
+
 
            </script>  
 </body>
