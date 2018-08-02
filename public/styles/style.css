@@ -23,13 +23,29 @@
     }
 
     tr:hover {background-color: lightblue}
-
-    #bigHeader{
-        font-size:5vw; 
-        max-width:100%;
-        color:red;
+  
+    .outer-div
+    {
+         padding: 30px;
+         text-align: center;
     }
-        .userform{
+    .inner-div
+    {
+         display: inline-block;
+         padding: 30px;
+    }
+    
+    
+   
+    #bigHeader{
+        font-size: 50px; 
+        border: 2px solid gray ;
+        border-radius: 15px;
+        padding: 10px;
+        line-height: 1.5;
+    }
+
+    .userform{
         border: 1px solid lightgrey ;
         border-radius: 5px;
         padding: 10px;
@@ -62,7 +78,7 @@
         transform: scale(1.5);
         transition: border-color 0s, transform 0.3s ease-out;
     }
-    
+
     .center {
         margin: auto;
         width: 50%;
