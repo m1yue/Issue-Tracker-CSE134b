@@ -1,109 +1,394 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <title>Issues List</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link href="./styles/style.css" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
 
-    <title>Issues List</title>
-</head>
-<body>
 
-    <nav><a href="login.html">Sign Out</a></nav>
 
-    <h1> Current Issues <i class="fas fa-exclamation-circle" title="Exclamation Icon"></i></h1>
-    <hr>
-
-    <a href="addIssue.html" id="addIssue"><i class="fas fa-plus-square"> Add Issue</i></a>
-
-    <div id="bugList">
-
-    <!--
-
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Issue</th>
-                <th>Description</th>
-                <th>Type</th>
-                <th>Priority</th>
-                <th>Open?</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><a href="./issues/A.html">A</a></td>
-                <td>Problem causes Issue A</td>
-                <td>Type 1</td>
-                <td>Priority 5</td>
-                <td>True</td>
-                <td class="modifyBtns"><a href="./issues/deleteA.html"><i class="far fa-trash-alt" title="Delete Issue">Delete</i></a></td>
-                <td class="modifyBtns"><a href="edit.html"><i class="far fa-edit" title="Edit Issue">Edit</i></a>
-            </tr>
-            <tr>
-                <td><a href="./issues/B.html">B</a></td>
-                <td>Problem causes Issue B</td>
-                <td>Type 1</td>
-                <td>Priority 5</td>
-                <td>True</td>
-                <td class="modifyBtns"><a href="./issues/deleteB.html"><i class="far fa-trash-alt" title="Delete Issue">Delete</i></a></td>
-                <td class="modifyBtns"><a href="edit.html"><i class="far fa-edit" title="Edit Issue">Edit</i></a>
-            </tr>
-        </tbody>
-        
-    </table>
-    -->
+    <script src="https://www.gstatic.com/firebasejs/5.3.0/firebase.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.3.0/firebase-firestore.js"></script>
 
     <script>
+    // Initialize Firebase
+    var config = {
+        apiKey: "AIzaSyDiHIMKzOAqSr_P9O0Ih89sIcxwuxHRIc0",
+        authDomain: "issue-tracker-cse134b-m1yue.firebaseapp.com",
+        databaseURL: "https://issue-tracker-cse134b-m1yue.firebaseio.com",
+        projectId: "issue-tracker-cse134b-m1yue",
+        storageBucket: "issue-tracker-cse134b-m1yue.appspot.com",
+        messagingSenderId: "705988756371"
+    };
+    firebase.initializeApp(config);
+  
+    </script>
+
+    <!--Track Auth Firebase-->
+    <script type="text/javascript">
+        initApp = function() {
+          firebase.auth().onAuthStateChanged(function(user) {
+            if (user) {
+              // User is signed in.
+              var displayName = user.displayName;
+              var email = user.email;
+              var emailVerified = user.emailVerified;
+              var photoURL = user.photoURL;
+              var uid = user.uid;
+              var phoneNumber = user.phoneNumber;
+              var providerData = user.providerData;
+              user.getIdToken().then(function(accessToken) {
+                document.getElementById('sign-in-status').innerHTML = 'Hi ' +displayName+'!';
+                document.getElementById('sign-in').innerHTML = `<a href="#" onclick="signOut()">Sign out</a>`;
+              });
+            } else {
+              // User is signed out.
+              document.getElementById('sign-in-status').textContent = 'You are not signed in.';
+              document.getElementById('sign-in').innerHTML = `<a href="index.html">Sign in</a>`;
+              document.getElementById('account-details').textContent = 'null';
+            }
+          }, function(error) {
+            console.log(error);
+          });
+        };
+  
+        window.addEventListener('load', function() {
+          initApp()
+        });
+
+        function signOut(){
+            firebase.auth().signOut().then(function() {
+                //window.location.replace("./index.html")
+            // Sign-out successful.
+            }).catch(function(error) {
+            // An error happened.
+            });
+        }
+
+        </script>
+</head>
+<body>
+    <nav>
+        <div id="sign-in-status"></div>
+        <div id="sign-in"></div>
+    </nav>  
+    
+    <button id="toggleFirestore" onclick="toggleFirestore(true)">Firestore</button>
+    <button id="toggleRest" onclick="toggleFirestore(false)">REST</button>
+
+
+
+    <div class="outer-div">
+        <div class="inner-div">
+            <h1> Current Issues <i class="fas fa-exclamation-circle" title="Exclamation Icon"></i></h1>
+            <hr>
+      
+            <div id="bugList"></div><br>
+            <div id="dialog"></div>
+        </div>
+    </div>
+
+    <template id="issueFormTemplate">
+        <b>Add Issue:</b>
+        <form id="addForm">
+            <label for="title">Title:</label>
+                <input type="text" id="title" name="title"><br>
+            <label for="type">Type:</label>
+                <input type="text" id="type" name="type"><br>
+            <label for="priority">Priority:</label>
+                    <select name="priority" id="priority">
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                    </select><br>
+            <input type="hidden" id="closed" name="closed" value="false">
+            <button id="addIssueBtn" type="button">Add</button>
+            <button id="cancelBtn" type="button">Cancel</button>
+        </form>
+    </template>
+
+    <template id="editFormTemplate">
+            <b>Edit Issue:</b>
+            
+            <form id="editForm">
+                <input type="hidden" name="issueId" id="issueId" value="fillIn">
+                <label for="title">Title:</label>
+                    <input type="text" id="title" name="title"><br>
+                <label for="type">Type:</label>
+                    <input type="text" id="type" name="type"><br>
+                <label for="priority">Priority:</label>
+                        <select name="priority" id="priority">
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                        </select><br>
+                <label for="closed">Closed?:</label>
+                    <select id="closed" name="closed">
+                        <option value="false">False</option>
+                        <option value="true">True</option>
+                    </select><br>
+                <button id="editIssueBtn" type="button">Save</button>
+                <button id="cancelBtn" type="button">Cancel</button>
+            </form>
+        </template>
+
+
+    <script>
+                                //global variable to change if using firestore or not
+                    var useFirestore=true;
+
+            //toggle via checkbox
+            function toggleFirestore(inp) {
+                    useFirestore = inp;
+                    if(useFirestore){
+                        getIssuesFirebase();
+                    }
+                    else{
+                        getIssues();
+                    }
+            }
+
             // easy global use just kicks to change easily
             const url = 'http://localhost:3000/issues';
+               
+            // Initialize Cloud Firestore through Firebase
+            var db = firebase.firestore();
             
+
             // when page loads, load those issues
             window.addEventListener('DOMContentLoaded', function () {
-                getIssues();
+                
+                if(useFirestore){
+                    getIssuesFirebase();
+                }
+                else{
+                    getIssues();
+                }
+
+                
             });
        
             // getIssues - simple fetch from the end point getting current issues state
             function getIssues() {
-       
               // change to fetch API if you are so inclined
               let xhr = new XMLHttpRequest();
               xhr.open('GET', url, true);
               xhr.onload = function () {
-                renderIssues(this.responseText);
+                
+                renderIssues(JSON.parse(this.responseText));
               }
               xhr.send();
+            }
+            
+            function getIssuesFirebase(){
+                db.collection("issues").get().then(function(querySnapshot) {
+                    var response =[];
+
+                    querySnapshot.forEach(function(doc) {
+                        // doc.data() is never undefined for query doc snapshots
+                         response.push(doc.data());
+                    });
+                    renderIssues(response);
+                });
             }
        
            // renderIssues - render the passed issues using template literals as opposed to template tags to show possibilities
            // approach deeply buries in the markup though!
            function renderIssues(issues) {
-       
-              issues = JSON.parse(issues);
-       
-              let output = `<table>
-                            <thead>
-                            <tr>
-                                <th>Title</th>
-                                <th>Type</th>
-                                <th>Priority</th>
-                                <th>Open?</th>
-                            </tr>
-                            </thead>` 
-               + (issues.map(issue => 
-               `<tr data-id="${issue.id}" data-issue='`+JSON.stringify(issue)+`'>
-                 <td>${issue.title}</td>
-                 <td>${issue.type}</td>
-                 <td>${issue.priority}</td>
-                 <td>${issue.closed}</td>
-               </tr>`
-              )).join('');
-            
-              document.querySelector("#bugList").innerHTML = output;
+            firebase.auth().onAuthStateChanged(function(user) {
+                if (user) {
+                    // User is signed in.
+        
+                    let output = `<button id="e" onclick="addIssue()"><i class="fas fa-plus-square"> Add Issue</i></button><br><br>
+                                <table>
+                                <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Type</th>
+                                    <th>Priority</th>
+                                    <th>Closed?</th>
+                                    <th colspan="2">Modify</th>
+                                </tr>
+                                </thead>
+                                <tbody>` 
+                    + (issues.map(issue => 
+                    `<tr data-id="${issue.id}" data-issue='`+JSON.stringify(issue)+`'>
+                        <td>${issue.title}</td>
+                        <td>${issue.type}</td>
+                        <td>${issue.priority}</td>
+                        <td>${issue.closed}</td>
+                    <td class="modifyBtns"><i onclick="deleteIssue('${issue.id}')" class="far fa-trash-alt" title="Delete Issue"></i></td>
+                    <td class="modifyBtns"><i onclick="editIssue('${issue.id}')" class="far fa-edit" title="Edit Issue"></i></td>
+                    </tr>`
+                    )).join('')+
+                    `</tbody></table>`;
+                
+                    document.querySelector("#bugList").innerHTML = output;
+                } else {
+                    // No user is signed in.
+                    document.querySelector("#bugList").innerHTML = '<p>Please Sign in to view issues</p>';        
+                }
+            });
+           }
+
+            // addIssue - notice that the differences between add and Edit are minor you could combine but readability might be hurt
+            function addIssue() {
+                // clone a blank add form from the template
+                let template = document.querySelector('#issueFormTemplate');
+                let clone = document.importNode(template.content, true);
+
+                //empty innerHTML and append new dialog
+                document.querySelector('#dialog').innerHTML = "";
+                document.querySelector('#dialog').appendChild(clone);
+                
+
+                // wire the add action, can use addEventListener if you like
+                document.querySelector('#addIssueBtn').onclick = function () {
+
+                    let formData = new FormData(document.querySelector('#addForm'));
+                    let payload = {};
+                    formData.forEach(function(value, key){
+                                    payload[key] = value;
+                            });
+
+                    //storage type selection
+                    if(useFirestore){
+                        firestoreAdd(payload);
+                    }else{//REST
+                        xhrAdd(payload);
+                    }
+                  
+                    document.querySelector("#dialog").innerHTML = "";
+                }
+
+                // wire the cancel event, can use addEventListener if you like
+                document.querySelector('#cancelBtn').onclick = function () {
+                    document.querySelector('#dialog').innerHTML = "";  
+                }
             }
-       
+
+            function xhrAdd(payload){
+                payload = JSON.stringify(payload);
+                let xhr = new XMLHttpRequest();
+                xhr.open('POST', url, true);
+                xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8')
+                xhr.onload = function () {
+                // no error checking done here!
+                // bad idea to go and refetch issues, network is easy but... need a store 
+                getIssues();
+                }
+                xhr.send(payload);
+            }
+
+            function firestoreAdd(payload){
+                
+                var newRef = db.collection("issues").doc();
+                payload.id=newRef.id;
+                newRef.set(payload);
+                console.log(payload);
+                getIssuesFirebase();
+            }
+
+            // deleteIssue - really basic delete with confirm idea to show how you can mock and then remove with fancier stuff later
+            function deleteIssue(id) {
+                function confirmDelete() {
+                    // simple example of incrementalism - use cheesy built-in confirm first.  Change to fancy one later
+                    return window.confirm('Delete issue?')
+                }
+
+                if (!confirmDelete())
+                return;  
+                
+                if(useFirestore){
+                    firestoreDelete(id);
+                }else{
+                    xhrDelete(id);
+                }
+
+            }
+
+            function xhrDelete(id){
+                let xhr = new XMLHttpRequest();
+                xhr.open('DELETE', url+'/'+id, true);
+                xhr.onload = function () {
+                    // no error checking done here
+                    // bad idea to go and refetch issues...lots of network - need a store :-)
+                    getIssues();
+                }
+                xhr.send();
+            }
+
+            function firestoreDelete(id){
+                db.collection("issues").doc(id).delete()
+                getIssuesFirebase();
+
+            }
+
+            // editIssue - shows example of how we can bury value in our markup for later use, notice modern libraries do this a lot!
+            function editIssue(id) {
+                        
+                        // retrieve the JSON buried in the markup for the bug
+                        let row = document.querySelector('tr[data-id="'+id+'"]');
+                        let issue = JSON.parse(row.getAttribute('data-issue'));
+            
+                        // populate the form fields into the template
+                        let template = document.querySelector('#editFormTemplate');
+            
+                        template.content.querySelector('#issueId').value = issue.id;
+                        template.content.querySelector('#title').value = issue.title;
+                        template.content.querySelector('#type').value = issue.type;
+                        template.content.querySelector('#closed').value = issue.closed;
+
+            
+                        let clone = document.importNode(template.content, true);
+
+                        document.querySelector('#dialog').innerHTML = "";
+                        document.querySelector('#dialog').appendChild(clone);
+            
+                    // write up the save button, can use addEventListener if you like
+                    document.querySelector('#editIssueBtn').onclick = function () {        
+                        let formData = new FormData(document.querySelector('#editForm'));
+                        let id = formData.get('issueId');
+                        let payload = {};
+                        formData.forEach(function(value, key){
+                                        payload[key] = value;
+                                });
+                        
+                        if(!useFirestore){
+                            payload = JSON.stringify(payload);
+                            let xhr = new XMLHttpRequest();
+                            xhr.open('PUT', url+'/'+id, true);
+                            xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8')
+                            xhr.onload = function () {
+                                // no error checking done here
+                                // bad idea to go and refetch issues...lots of network - need a store :-)
+                                getIssues();
+                            }
+                            xhr.send(payload);
+
+                        }else{//FIRESTORE
+
+                            var newRef = db.collection("issues").doc(id);
+                            console.log(payload);
+                            newRef.update(payload)
+                            getIssuesFirebase();
+                        }
+                        document.querySelector("#dialog").innerHTML = "";
+
+                    }
+                    
+                    // wire up the cancel button, can use addEventListener if you like
+                    document.querySelector('#cancelBtn').onclick = function () {
+                        document.querySelector('#dialog').innerHTML = "";  
+                    }
+            }
+
+            
+
+
            </script>  
 </body>
 </html>
