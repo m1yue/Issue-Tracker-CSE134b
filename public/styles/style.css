@@ -38,10 +38,14 @@
     
    
     #bigHeader{
-        font-size:3vw; 
-        
+        font-size: 50px; 
+        border: 2px solid gray ;
+        border-radius: 15px;
+        padding: 10px;
+        line-height: 1.5;
     }
-        .userform{
+
+    .userform{
         border: 1px solid lightgrey ;
         border-radius: 5px;
         padding: 10px;
