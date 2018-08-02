@@ -25,8 +25,6 @@
     };
     firebase.initializeApp(config);
   
-    // Initialize Cloud Firestore through Firebase
-    var db = firebase.firestore();
     </script>
 
     <!--Track Auth Firebase-->
@@ -138,7 +136,9 @@
     <script>
             // easy global use just kicks to change easily
             const url = 'http://localhost:3000/issues';
-            
+               
+            // Initialize Cloud Firestore through Firebase
+            var db = firebase.firestore();
             
 
             // when page loads, load those issues
@@ -150,7 +150,6 @@
        
             // getIssues - simple fetch from the end point getting current issues state
             function getIssues() {
-       
               // change to fetch API if you are so inclined
               let xhr = new XMLHttpRequest();
               xhr.open('GET', url, true);
@@ -160,7 +159,7 @@
               }
               xhr.send();
             }
-
+            
             function getIssuesFirebase(){
                 db.collection("issues").get().then(function(querySnapshot) {
                     var response =[];
@@ -214,10 +213,6 @@
             });
            }
 
-           function renderIssuesFirebase(issues){
-
-           }
-
             // addIssue - notice that the differences between add and Edit are minor you could combine but readability might be hurt
             function addIssue() {
                 // clone a blank add form from the template
@@ -237,17 +232,9 @@
                     formData.forEach(function(value, key){
                                     payload[key] = value;
                             });
-                    payload = JSON.stringify(payload);
-                    
-                    let xhr = new XMLHttpRequest();
-                    xhr.open('POST', url, true);
-                    xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8')
-                    xhr.onload = function () {
-                    // no error checking done here!
-                    // bad idea to go and refetch issues, network is easy but... need a store 
-                    getIssues();
-                    }
-                    xhr.send(payload);
+                   
+                    //xhrAdd(payload);
+                    firestoreAdd(payload);
 
                     document.querySelector("#dialog").innerHTML = "";
                 }
@@ -256,6 +243,24 @@
                 document.querySelector('#cancelBtn').onclick = function () {
                     document.querySelector('#dialog').innerHTML = "";  
                 }
+            }
+
+            function xhrAdd(payload){
+                payload = JSON.stringify(payload);
+                let xhr = new XMLHttpRequest();
+                xhr.open('POST', url, true);
+                xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8')
+                xhr.onload = function () {
+                // no error checking done here!
+                // bad idea to go and refetch issues, network is easy but... need a store 
+                getIssues();
+                }
+                xhr.send(payload);
+            }
+
+            function firestoreAdd(payload){
+                db.collection("issues").add(payload);
+                getIssuesFirebase();
             }
 
             // deleteIssue - really basic delete with confirm idea to show how you can mock and then remove with fancier stuff later
