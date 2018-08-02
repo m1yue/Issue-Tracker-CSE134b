@@ -205,7 +205,7 @@
                         <td>${issue.priority}</td>
                         <td>${issue.closed}</td>
                     <td class="modifyBtns"><i onclick="deleteIssue('${issue.id}')" class="far fa-trash-alt" title="Delete Issue"></i></td>
-                    <td class="modifyBtns"><i onclick="editIssue(${issue.id})" class="far fa-edit" title="Edit Issue"></i></td>
+                    <td class="modifyBtns"><i onclick="editIssue('${issue.id}')" class="far fa-edit" title="Edit Issue"></i></td>
                     </tr>`
                     )).join('')+
                     `</tbody></table>`;
@@ -218,22 +218,6 @@
             });
            }
 
-           function renderTableBody(issues){
-                if(!useFirestore){
-                    return (issues.map(issue => 
-                    `<tr data-id="${issue.id}" data-issue='`+JSON.stringify(issue)+`'>
-                        <td>${issue.title}</td>
-                        <td>${issue.type}</td>
-                        <td>${issue.priority}</td>
-                        <td>${issue.closed}</td>
-                    <td class="modifyBtns"><i onclick="deleteIssue(${issue.id})" class="far fa-trash-alt" title="Delete Issue"></i></td>
-                    <td class="modifyBtns"><i onclick="editIssue(${issue.id})" class="far fa-edit" title="Edit Issue"></i></td>
-                    </tr>`
-                    ));
-                }else{
-                    return 
-                }
-           }
             // addIssue - notice that the differences between add and Edit are minor you could combine but readability might be hurt
             function addIssue() {
                 // clone a blank add form from the template
@@ -360,18 +344,28 @@
                         formData.forEach(function(value, key){
                                         payload[key] = value;
                                 });
-                        payload = JSON.stringify(payload);
                         
-                        let xhr = new XMLHttpRequest();
-                        xhr.open('PUT', url+'/'+id, true);
-                        xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8')
-                        xhr.onload = function () {
-                            // no error checking done here
-                            // bad idea to go and refetch issues...lots of network - need a store :-)
-                            getIssues();
+                        if(!useFirestore){
+                            payload = JSON.stringify(payload);
+                            let xhr = new XMLHttpRequest();
+                            xhr.open('PUT', url+'/'+id, true);
+                            xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8')
+                            xhr.onload = function () {
+                                // no error checking done here
+                                // bad idea to go and refetch issues...lots of network - need a store :-)
+                                getIssues();
+                            }
+                            xhr.send(payload);
+
+                        }else{//FIRESTORE
+
+                            var newRef = db.collection("issues").doc(id);
+                            console.log(payload);
+                            newRef.update(payload)
+                            getIssuesFirebase();
                         }
-                        xhr.send(payload);
                         document.querySelector("#dialog").innerHTML = "";
+
                     }
                     
                     // wire up the cancel button, can use addEventListener if you like
@@ -379,6 +373,9 @@
                         document.querySelector('#dialog').innerHTML = "";  
                     }
             }
+
+            
+
 
            </script>  
 </body>
